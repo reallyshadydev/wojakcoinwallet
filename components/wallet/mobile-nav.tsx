@@ -13,23 +13,25 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWallet, type WalletView } from "@/lib/wallet-context";
+import { useLocale } from "@/lib/i18n/locale-provider";
 
-const mobileNavItems: { label: string; view: WalletView; icon: React.ElementType }[] = [
-  { label: "Home", view: "dashboard", icon: LayoutDashboard },
-  { label: "Send", view: "send", icon: Send },
-  { label: "Receive", view: "receive", icon: Download },
-  { label: "Addresses", view: "addressbook", icon: BookOpen },
-  { label: "History", view: "transactions", icon: History },
-  { label: "Settings", view: "settings", icon: Settings },
+const mobileNavItems: { labelKey: string; view: WalletView; icon: React.ElementType }[] = [
+  { labelKey: "mobile.home", view: "dashboard", icon: LayoutDashboard },
+  { labelKey: "nav.send", view: "send", icon: Send },
+  { labelKey: "nav.receive", view: "receive", icon: Download },
+  { labelKey: "mobile.addresses", view: "addressbook", icon: BookOpen },
+  { labelKey: "mobile.history", view: "transactions", icon: History },
+  { labelKey: "nav.settings", view: "settings", icon: Settings },
 ];
 
 export function MobileNav() {
+  const { t } = useLocale();
   const { activeView, setActiveView, lockWallet } = useWallet();
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(env(safe-area-inset-bottom),0.4rem)] pt-1 md:hidden">
       <div className="grid grid-cols-7 overflow-hidden rounded-2xl border border-border bg-card/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/90">
-        {mobileNavItems.map(({ label, view, icon: Icon }) => (
+        {mobileNavItems.map(({ labelKey, view, icon: Icon }) => (
           <button
             key={view}
             onClick={() => setActiveView(view)}
@@ -41,7 +43,7 @@ export function MobileNav() {
             )}
           >
             <Icon className="h-5 w-5 shrink-0" />
-            <span className="w-full truncate text-center">{label}</span>
+            <span className="w-full truncate text-center">{t(labelKey)}</span>
           </button>
         ))}
         <button
@@ -50,7 +52,7 @@ export function MobileNav() {
           className="flex min-h-[4.25rem] flex-col items-center justify-center gap-1 px-1 py-3 text-[10px] font-medium leading-tight text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
         >
           <Lock className="h-5 w-5 shrink-0" />
-          <span className="w-full truncate text-center">Lock</span>
+          <span className="w-full truncate text-center">{t("mobile.lock")}</span>
         </button>
       </div>
     </nav>

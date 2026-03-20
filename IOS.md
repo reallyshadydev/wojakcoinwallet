@@ -62,6 +62,47 @@ In Xcode:
 2. **Product → Archive**.
 3. After archiving, use **Distribute App** to export for App Store Connect or ad-hoc distribution.
 
+## TestFlight (install on your iPhone)
+
+TestFlight lets you install beta builds on your iPhone without going through the App Store. You need an **Apple Developer account** ($99/year) and a **Mac with Xcode**.
+
+### 1. App Store Connect
+
+1. Go to [App Store Connect](https://appstoreconnect.apple.com) and sign in with your Apple Developer account.
+2. **My Apps** → **+** → **New App**. Choose iOS, name (e.g. “Wojakcoinwallet”), bundle ID, SKU. Create the app (you don’t have to submit to the store to use TestFlight).
+3. Note the **Bundle ID** (e.g. `com.yourapp.wojakcoinwallet`). It must match the one in the Xcode project: open `ios/App/App/Info.plist` or the project in Xcode and check **Signing & Capabilities** → Bundle Identifier.
+
+### 2. Signing in Xcode (on your Mac)
+
+1. Clone the repo and build/sync as in **Setup** above (`npm run build:ios`, then `cd ios/App && pod install`).
+2. Open the app: `npm run open:ios` (or open `ios/App/App.xcworkspace`).
+3. In Xcode: select the **App** project in the left sidebar → **Signing & Capabilities**.
+4. Check **Automatically manage signing**, choose your **Team** (your Apple Developer account). Xcode will create/use a provisioning profile.
+5. Ensure the **Bundle Identifier** matches the app you created in App Store Connect.
+
+### 3. Archive and upload
+
+1. At the top of Xcode, set the run destination to **Any iOS Device (arm64)**.
+2. Menu: **Product → Archive**.
+3. When the Organizer opens, select the new archive and click **Distribute App**.
+4. Choose **App Store Connect** → **Upload** → Next.
+5. Leave options as default (e.g. upload symbols, manage version/build) → Next.
+6. Select your distribution certificate / signing identity → Next and wait for the upload to finish.
+
+### 4. Enable the build in TestFlight
+
+1. In App Store Connect, open your app → **TestFlight** tab.
+2. Under **iOS Builds**, the build you just uploaded will appear (processing can take 5–15 minutes).
+3. When it’s ready, add **Internal Testing** (your own team) and/or **External Testing** (requires a short review). You can add yourself as a tester.
+
+### 5. Install on your iPhone
+
+1. On your iPhone, install **TestFlight** from the App Store.
+2. Open the email invite from App Store Connect, or in TestFlight tap **Redeem** and enter the code from App Store Connect (TestFlight → your app → testers).
+3. In TestFlight, tap **Install** next to Wojakcoinwallet. The app will install like a normal app.
+
+**Note:** The build from the **GitHub Actions** workflow (the `.app` in the release artifact) is **unsigned** and cannot be used for TestFlight. You must archive and upload from your Mac with your Apple Developer signing as above.
+
 ## App icons
 
 The Android project uses Wojak branding in `android/.../res/`. For iOS, set the app icon in Xcode:

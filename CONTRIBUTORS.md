@@ -1,6 +1,6 @@
 # Contributors
 
-Thanks to everyone who contributes to WojakCoin Wallet Android.
+Thanks to everyone who contributes to Wojakcoinwallet.
 
 ## Maintainer
 
@@ -8,4 +8,4 @@ Thanks to everyone who contributes to WojakCoin Wallet Android.
 
 ## Contributing
 
-Contributions are welcome. Open an issue or pull request on [GitHub](https://github.com/reallyshadydev/wojakwallet-android).
+Contributions are welcome. Open an issue or pull request on [GitHub](https://github.com/reallyshadydev/wojakcoinwallet).

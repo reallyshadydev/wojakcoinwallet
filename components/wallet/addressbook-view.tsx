@@ -18,6 +18,7 @@ import { copyToClipboard } from "@/lib/clipboard";
 import { QrScannerModal } from "./qr-scanner-modal";
 import { parseWojakCoinQr } from "@/lib/parse-bip21";
 import { useToast } from "@/hooks/use-toast";
+import { useLocale } from "@/lib/i18n/locale-provider";
 
 // Only allow WojakCoin address characters (base58: W prefix then 1-9, A-H, J-N, P-Z, a-k, m-z)
 function filterAddressInput(value: string): string {
@@ -30,6 +31,7 @@ function filterAddressInput(value: string): string {
 }
 
 export function AddressBookView() {
+  const { t } = useLocale();
   const { setActiveView, setPresetRecipientAddress } = useWallet();
   const [entries, setEntries] = useState<AddressBookEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,17 +60,17 @@ export function AddressBookView() {
     if (!addr || !addr.startsWith("W")) return;
     if (isInAddressBook(addr)) {
       toast({
-        title: "Address already in book",
-        description: "This address is already saved in your address book.",
+        title: t("addr.toast_duplicate_title"),
+        description: t("addr.toast_duplicate_desc"),
         variant: "destructive",
       });
       return;
     }
-    const added = addAddress(newLabel.trim() || "Unnamed", addr);
+    const added = addAddress(newLabel.trim() || t("addr.unnamed"), addr);
     if (!added) {
       toast({
-        title: "Address already in book",
-        description: "This address is already saved in your address book.",
+        title: t("addr.toast_duplicate_title"),
+        description: t("addr.toast_duplicate_desc"),
         variant: "destructive",
       });
       return;
@@ -76,7 +78,7 @@ export function AddressBookView() {
     setEntries(getAddressBook());
     setNewLabel("");
     setNewAddress("");
-    toast({ title: "Added to address book", description: newLabel.trim() || addr.slice(0, 16) + "..." });
+    toast({ title: t("addr.toast_added_title"), description: newLabel.trim() || addr.slice(0, 16) + "..." });
   }
 
   function handleRemove(addr: string) {
@@ -108,9 +110,9 @@ export function AddressBookView() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-2xl">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-foreground">Address Book</h2>
+        <h2 className="text-xl font-bold text-foreground">{t("addr.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Save addresses you send to for quick access.
+          {t("addr.subtitle")}
         </p>
       </div>
 
@@ -119,20 +121,20 @@ export function AddressBookView() {
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Add Address
+            {t("addr.add_title")}
           </CardTitle>
           <CardDescription>
-            Add a WojakCoin address and label to your address book.
+            {t("addr.add_desc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="ab-label" className="text-xs">
-              Label (optional)
+              {t("addr.label_optional")}
             </Label>
             <Input
               id="ab-label"
-              placeholder="e.g. Exchange, Friend"
+              placeholder={t("send.name_placeholder")}
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
               className="font-medium"
@@ -141,17 +143,17 @@ export function AddressBookView() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="ab-address" className="text-xs">
-                WojakCoin Address
+                {t("addr.wojak_address")}
               </Label>
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-8 gap-1.5 px-2 text-xs"
                 onClick={() => setScanOpen(true)}
-                title="Scan QR code"
+                title={t("send.scan_qr")}
               >
                 <QrCode className="h-4 w-4" />
-                Scan
+                {t("addr.scan")}
               </Button>
             </div>
             <Input
@@ -166,12 +168,12 @@ export function AddressBookView() {
             open={scanOpen}
             onOpenChange={setScanOpen}
             onScan={handleQrScan}
-            title="Scan Address"
-            description="Scan a WojakCoin address QR code"
+            title={t("addr.add_scan_title")}
+            description={t("addr.add_scan_desc")}
           />
           <Button onClick={handleAdd} disabled={!canAdd} className="gap-2">
             <Plus className="h-4 w-4" />
-            Add to Address Book
+            {t("addr.add_button")}
           </Button>
         </CardContent>
       </Card>
@@ -181,16 +183,16 @@ export function AddressBookView() {
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
-            Saved Addresses
+            {t("addr.saved_title")}
           </CardTitle>
           <CardDescription>
-            {entries.length} {entries.length === 1 ? "address" : "addresses"} saved
+            {t("addr.addresses_count", { count: entries.length })}
           </CardDescription>
           {entries.length > 0 && (
             <div className="relative mt-2">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by name or address..."
+                placeholder={t("addr.search_ph")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 font-normal"
@@ -201,11 +203,11 @@ export function AddressBookView() {
         <CardContent className="min-w-0 overflow-x-auto">
           {entries.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No addresses yet. Add one above to get started.
+              {t("addr.empty")}
             </p>
           ) : filteredEntries.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No matches for &quot;{searchQuery.trim()}&quot;.
+              {t("addr.no_matches", { q: searchQuery.trim() })}
             </p>
           ) : (
             <div className="divide-y divide-border">
@@ -227,7 +229,7 @@ export function AddressBookView() {
                       variant="outline"
                       size="icon"
                       onClick={() => handleUseForSend(entry.address)}
-                      title="Use for Send"
+                      title={t("addr.use_send")}
                     >
                       <Send className="h-4 w-4" />
                     </Button>
@@ -235,7 +237,7 @@ export function AddressBookView() {
                       variant="outline"
                       size="icon"
                       onClick={() => handleCopy(entry.address)}
-                      title="Copy address"
+                      title={t("addr.copy_title")}
                     >
                       {copied === entry.address ? (
                         <Check className="h-4 w-4 text-success" />
@@ -247,7 +249,7 @@ export function AddressBookView() {
                       variant="outline"
                       size="icon"
                       onClick={() => handleRemove(entry.address)}
-                      title="Remove"
+                      title={t("addr.remove")}
                       className="text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">WojakCoin Wallet</string>
-    <string name="title_activity_main">WojakCoin Wallet</string>
+    <string name="app_name">Wojakcoinwallet</string>
+    <string name="title_activity_main">Wojakcoinwallet</string>
     <string name="package_name">cash.wojakcoin.wallet</string>
     <string name="custom_url_scheme">cash.wojakcoin.wallet</string>
 </resources>

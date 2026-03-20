@@ -9,8 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useWallet } from "@/lib/wallet-context";
+import { useLocale } from "@/lib/i18n/locale-provider";
 
 export function LockScreen() {
+  const { t } = useLocale();
   const { unlockWallet, staySignedIn } = useWallet();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +25,7 @@ export function LockScreen() {
     setError("");
     const success = await unlockWallet(password, stayChecked);
     if (!success) {
-      setError("Incorrect password. Please try again.");
+      setError(t("lock.error_incorrect"));
     }
     setIsUnlocking(false);
   }
@@ -36,8 +38,8 @@ export function LockScreen() {
             <WojakCoinLogo size={38} className="text-primary-foreground" />
           </div>
           <div className="text-center">
-            <h1 className="text-xl font-bold text-foreground">WojakCoin Wallet</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Enter your password to unlock</p>
+            <h1 className="text-xl font-bold text-foreground">{t("lock.title")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{t("lock.subtitle")}</p>
           </div>
 
           <form
@@ -46,12 +48,12 @@ export function LockScreen() {
             onSubmit={(e) => { e.preventDefault(); handleUnlock(); }}
           >
             <div className="flex flex-col gap-2">
-              <Label htmlFor="unlock-password" className="text-xs text-muted-foreground">Password (leave empty if none)</Label>
+              <Label htmlFor="unlock-password" className="text-xs text-muted-foreground">{t("lock.password_label")}</Label>
               <Input
                 id="unlock-password"
                 name="wallet-unlock"
                 type="password"
-                placeholder="Enter password or leave empty"
+                placeholder={t("lock.password_placeholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
@@ -70,7 +72,7 @@ export function LockScreen() {
                 onCheckedChange={(c) => setStayChecked(!!c)}
               />
               <Label htmlFor="stay-signed-in" className="text-xs cursor-pointer">
-                Stay signed in on this tab (lock after 3 min inactivity)
+                {t("lock.stay_signed_in")}
               </Label>
             </div>
 
@@ -88,7 +90,7 @@ export function LockScreen() {
               ) : (
                 <Lock className="h-4 w-4" />
               )}
-              {isUnlocking ? "Unlocking..." : "Unlock Wallet"}
+              {isUnlocking ? t("lock.unlocking") : t("lock.unlock")}
             </Button>
           </form>
         </CardContent>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, Server, Copy, Check, Wallet, AlertTriangle, Key, Eye, EyeOff } from "lucide-react";
+import { Shield, Server, Copy, Check, Wallet, AlertTriangle, Key, Eye, EyeOff, Languages } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +9,22 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useWallet } from "@/lib/wallet-context";
 import { deleteWallet, STORAGE_BACKEND, isWalletEncrypted } from "@/lib/wallet-storage";
 import { copyToClipboard } from "@/lib/clipboard";
 import { HardDrive } from "lucide-react";
+import { useLocale } from "@/lib/i18n/locale-provider";
+import { locales, localeLabels, type Locale } from "@/lib/i18n/messages";
 
 export function SettingsView() {
+  const { t, locale, setLocale } = useLocale();
   const { network, address, utxos, getPrivateKey } = useWallet();
   const [electrsUrl, setElectrsUrl] = useState("https://api.wojakcoin.cash");
   const [explorerUrl, setExplorerUrl] = useState("https://explorer.wojakcoin.cash");
@@ -29,7 +39,7 @@ export function SettingsView() {
   };
 
   const handleDeleteWallet = () => {
-    if (typeof window !== "undefined" && confirm("Delete wallet? You will need your private key to recover. This cannot be undone.")) {
+    if (typeof window !== "undefined" && confirm(t("settings.delete_confirm"))) {
       deleteWallet();
       window.location.reload();
     }
@@ -47,61 +57,91 @@ export function SettingsView() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-bold text-foreground">Settings</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Manage your wallet.</p>
+        <h2 className="text-xl font-bold text-foreground">{t("settings.title")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("settings.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="w-full justify-start">
-          <TabsTrigger value="general" className="text-xs">General</TabsTrigger>
-          <TabsTrigger value="network" className="text-xs">Network</TabsTrigger>
-          <TabsTrigger value="utxos" className="text-xs">UTXOs</TabsTrigger>
-          <TabsTrigger value="security" className="text-xs">Security</TabsTrigger>
+          <TabsTrigger value="general" className="text-xs">{t("settings.tab_general")}</TabsTrigger>
+          <TabsTrigger value="network" className="text-xs">{t("settings.tab_network")}</TabsTrigger>
+          <TabsTrigger value="utxos" className="text-xs">{t("settings.tab_utxos")}</TabsTrigger>
+          <TabsTrigger value="security" className="text-xs">{t("settings.tab_security")}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="mt-4">
+        <TabsContent value="general" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Languages className="h-4 w-4 text-primary" />
+                {t("settings.language_title")}
+              </CardTitle>
+              <CardDescription className="text-xs">{t("settings.language_desc")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <Label className="text-xs text-muted-foreground shrink-0">{t("settings.language_title")}</Label>
+                <Select
+                  value={locale}
+                  onValueChange={(v) => setLocale(v as Locale)}
+                >
+                  <SelectTrigger className="w-full sm:min-w-[260px] sm:max-w-[min(100%,320px)] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locales.map((loc) => (
+                      <SelectItem key={loc} value={loc} className="text-xs">
+                        {localeLabels[loc]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Wallet className="h-4 w-4 text-primary" />
-                Wallet
+                {t("settings.wallet_card")}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Network</p>
-                  <p className="text-xs text-muted-foreground">WojakCoin</p>
+                  <p className="text-sm font-medium text-foreground">{t("settings.network_label")}</p>
+                  <p className="text-xs text-muted-foreground">{t("settings.network_name")}</p>
                 </div>
                 <Badge variant="secondary" className="capitalize">{network}</Badge>
               </div>
               <Separator />
               <div className="flex flex-col gap-2">
-                <Label className="text-xs text-muted-foreground">Address</Label>
+                <Label className="text-xs text-muted-foreground">{t("settings.address")}</Label>
                 <div className="flex gap-2">
                   <Input readOnly value={address} className="font-mono text-xs" />
                   <Button variant="outline" size="icon" onClick={handleCopyAddress}>
                     {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
-                    <span className="sr-only">Copy</span>
+                    <span className="sr-only">{t("settings.copy")}</span>
                   </Button>
                 </div>
-                <p className="text-[10px] text-muted-foreground">Legacy P2PKH (W prefix). Single-address wallet.</p>
+                <p className="text-[10px] text-muted-foreground">{t("settings.address_hint")}</p>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Address Type</p>
-                  <p className="text-xs text-muted-foreground">Private key only, no mnemonic</p>
+                  <p className="text-sm font-medium text-foreground">{t("settings.address_type")}</p>
+                  <p className="text-xs text-muted-foreground">{t("settings.address_type_desc")}</p>
                 </div>
-                <Badge variant="outline">P2PKH</Badge>
+                <Badge variant="outline">{t("settings.p2pkh")}</Badge>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <HardDrive className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium text-foreground">Storage</p>
+                    <p className="text-sm font-medium text-foreground">{t("settings.storage")}</p>
                     <p className="text-xs text-muted-foreground">
-                      Wallet stored locally. Never on any server.
+                      {t("settings.storage_desc")}
                     </p>
                   </div>
                 </div>
@@ -118,19 +158,19 @@ export function SettingsView() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Server className="h-4 w-4 text-primary" />
-                Electrs API
+                {t("settings.electrs_api")}
               </CardTitle>
               <CardDescription className="text-xs">
-                Configure via .env. Restart required to apply.
+                {t("settings.electrs_desc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <Label className="text-xs text-muted-foreground">Electrs API URL</Label>
+                <Label className="text-xs text-muted-foreground">{t("settings.electrs_url")}</Label>
                 <Input value={electrsUrl} readOnly className="font-mono text-xs" />
               </div>
               <div className="flex flex-col gap-2">
-                <Label className="text-xs text-muted-foreground">Block Explorer</Label>
+                <Label className="text-xs text-muted-foreground">{t("settings.block_explorer")}</Label>
                 <Input value={explorerUrl} readOnly className="font-mono text-xs" />
               </div>
             </CardContent>
@@ -140,8 +180,8 @@ export function SettingsView() {
         <TabsContent value="utxos" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Unspent Outputs</CardTitle>
-              <CardDescription className="text-xs">{utxos.length} UTXOs</CardDescription>
+              <CardTitle className="text-sm">{t("settings.utxos_title")}</CardTitle>
+              <CardDescription className="text-xs">{t("settings.utxos_count", { count: utxos.length })}</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border">
@@ -154,14 +194,14 @@ export function SettingsView() {
                       {utxo.status.confirmed ? (
                         <Badge variant="secondary" className="text-[9px] w-fit">Block #{utxo.status.block_height}</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[9px] w-fit border-primary/30 text-primary">Unconfirmed</Badge>
+                        <Badge variant="outline" className="text-[9px] w-fit border-primary/30 text-primary">{t("settings.unconfirmed")}</Badge>
                       )}
                     </div>
                     <span className="text-sm font-mono font-bold">{(utxo.value / 100_000_000).toFixed(8)} WJK</span>
                   </div>
                 ))}
                 {utxos.length === 0 && (
-                  <div className="px-6 py-8 text-center text-sm text-muted-foreground">No UTXOs</div>
+                  <div className="px-6 py-8 text-center text-sm text-muted-foreground">{t("settings.no_utxos")}</div>
                 )}
               </div>
             </CardContent>
@@ -173,10 +213,10 @@ export function SettingsView() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Key className="h-4 w-4 text-primary" />
-                Private Key
+                {t("settings.private_key")}
               </CardTitle>
               <CardDescription className="text-xs">
-                Your private key (WIF) controls all funds at your address. Never share it.
+                {t("settings.private_key_desc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -184,13 +224,13 @@ export function SettingsView() {
                 <div className="flex gap-2">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500" />
                   <p className="text-xs text-amber-800 dark:text-amber-200">
-                    Anyone with this key can spend your funds. Only reveal it to backup or import elsewhere.
+                    {t("settings.key_warning")}
                   </p>
                 </div>
               </div>
               {showPrivateKey ? (
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Private Key (WIF)</Label>
+                  <Label className="text-xs text-muted-foreground">{t("settings.private_key_wif")}</Label>
                   <div className="flex gap-2">
                     <Input
                       readOnly
@@ -200,7 +240,7 @@ export function SettingsView() {
                     />
                     <Button variant="outline" size="icon" onClick={handleCopyPrivateKey}>
                       {keyCopied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
-                      <span className="sr-only">Copy</span>
+                      <span className="sr-only">{t("settings.copy")}</span>
                     </Button>
                     <Button variant="outline" size="icon" onClick={() => setShowPrivateKey(false)}>
                       <EyeOff className="h-4 w-4" />
@@ -211,7 +251,7 @@ export function SettingsView() {
               ) : (
                 <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowPrivateKey(true)}>
                   <Eye className="h-4 w-4" />
-                  Reveal Private Key
+                  {t("settings.reveal_key")}
                 </Button>
               )}
             </CardContent>
@@ -221,7 +261,7 @@ export function SettingsView() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Shield className="h-4 w-4 text-primary" />
-                Danger Zone
+                {t("settings.danger_zone")}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -229,12 +269,12 @@ export function SettingsView() {
                 <div className="flex gap-2">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                   <p className="text-xs text-destructive">
-                    Deleting removes the encrypted wallet from this device. Ensure you have your private key backed up before proceeding.
+                    {t("settings.danger_desc")}
                   </p>
                 </div>
               </div>
               <Button variant="destructive" size="sm" onClick={handleDeleteWallet}>
-                Delete Wallet
+                {t("settings.delete_wallet")}
               </Button>
             </CardContent>
           </Card>

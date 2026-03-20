@@ -19,17 +19,19 @@ import { useWallet, type WalletView } from "@/lib/wallet-context";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatWjk } from "@/lib/wojakcoin-api";
+import { useLocale } from "@/lib/i18n/locale-provider";
 
-const navItems: { label: string; view: WalletView; icon: React.ElementType }[] = [
-  { label: "Dashboard", view: "dashboard", icon: LayoutDashboard },
-  { label: "Send", view: "send", icon: Send },
-  { label: "Receive", view: "receive", icon: Download },
-  { label: "Address Book", view: "addressbook", icon: BookOpen },
-  { label: "Transactions", view: "transactions", icon: History },
-  { label: "Settings", view: "settings", icon: Settings },
+const navItems: { labelKey: string; view: WalletView; icon: React.ElementType }[] = [
+  { labelKey: "nav.dashboard", view: "dashboard", icon: LayoutDashboard },
+  { labelKey: "nav.send", view: "send", icon: Send },
+  { labelKey: "nav.receive", view: "receive", icon: Download },
+  { labelKey: "nav.addressbook", view: "addressbook", icon: BookOpen },
+  { labelKey: "nav.transactions", view: "transactions", icon: History },
+  { labelKey: "nav.settings", view: "settings", icon: Settings },
 ];
 
 export function SidebarNav() {
+  const { t } = useLocale();
   const { activeView, setActiveView, balanceTotal, lockWallet, refreshWallet, lastSynced, network, blockHeight, isSyncing } = useWallet();
 
   return (
@@ -40,7 +42,7 @@ export function SidebarNav() {
           <WojakCoinLogo className="h-6 w-6 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-sm font-semibold text-foreground">WojakCoin Wallet</h1>
+          <h1 className="text-sm font-semibold text-foreground">{t("sidebar.title")}</h1>
           <p className="text-xs text-muted-foreground capitalize">{network}</p>
         </div>
       </div>
@@ -49,7 +51,7 @@ export function SidebarNav() {
 
       {/* Balance Summary */}
       <div className="px-6 py-4">
-        <p className="text-xs font-medium text-muted-foreground">Total Balance</p>
+        <p className="text-xs font-medium text-muted-foreground">{t("sidebar.total_balance")}</p>
         <p className="mt-1 text-lg font-bold text-foreground font-mono">
           {formatWjk(balanceTotal)} <span className="text-xs text-muted-foreground">WJK</span>
         </p>
@@ -59,7 +61,7 @@ export function SidebarNav() {
 
       {/* Navigation */}
       <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
-        {navItems.map(({ label, view, icon: Icon }) => (
+        {navItems.map(({ labelKey, view, icon: Icon }) => (
           <button
             key={view}
             onClick={() => setActiveView(view)}
@@ -71,7 +73,7 @@ export function SidebarNav() {
             )}
           >
             <Icon className="h-4 w-4" />
-            {label}
+            {t(labelKey)}
           </button>
         ))}
       </nav>
@@ -81,11 +83,11 @@ export function SidebarNav() {
         <Separator className="mb-4" />
         <div className="mb-3 px-3">
           <p className="text-xs text-muted-foreground">
-            Block: <span className="font-mono text-foreground">{blockHeight.toLocaleString()}</span>
+            {t("sidebar.block")}: <span className="font-mono text-foreground">{blockHeight.toLocaleString()}</span>
           </p>
           {lastSynced && (
             <p className="mt-1 text-xs text-muted-foreground">
-              Synced {lastSynced.toLocaleTimeString()}
+              {t("sidebar.synced")} {lastSynced.toLocaleTimeString()}
             </p>
           )}
         </div>
@@ -107,7 +109,7 @@ export function SidebarNav() {
             ) : (
               <RefreshCw className="mr-1.5 h-3 w-3" />
             )}
-            {isSyncing ? "Syncing..." : "Sync"}
+            {isSyncing ? t("sidebar.syncing") : t("sidebar.sync")}
           </Button>
           <Button
             type="button"
@@ -117,7 +119,7 @@ export function SidebarNav() {
             onClick={lockWallet}
           >
             <Lock className="mr-1.5 h-3 w-3" />
-            Lock
+            {t("mobile.lock")}
           </Button>
         </div>
       </div>

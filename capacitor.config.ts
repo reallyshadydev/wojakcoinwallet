@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'cash.wojakcoin.wallet',
-  appName: 'WojakCoin Wallet',
+  appName: 'Wojakcoinwallet',
   webDir: 'out',
   server: {
     // For production, point to your deployed Next.js app to use API routes:
@@ -11,6 +11,9 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: true,
+  },
+  ios: {
+    contentInset: 'automatic',
   },
 };
 

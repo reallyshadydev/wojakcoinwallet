@@ -1,11 +1,11 @@
-# Push to GitHub (reallyshadydev/wojakwallet-android)
+# Push to GitHub (reallyshadydev/wojakcoinwallet)
 
 This project is ready to push. Create the GitHub repo first, then push using your configured credentials.
 
 ## 1. Create the repository on GitHub
 
 1. Go to **https://github.com/new**
-2. **Repository name:** `wojakwallet-android`
+2. **Repository name:** `wojakcoinwallet`
 3. **Owner:** `reallyshadydev`
 4. Leave it **empty** (no README, .gitignore, or license—we already have them).
 5. Click **Create repository**.
@@ -17,21 +17,21 @@ Use your existing Git config so pushes use your credentials (HTTPS token or SSH 
 - **HTTPS:** If you use a credential helper or token, ensure `git config --global credential.helper` is set (e.g. `store` or `cache`). Push will prompt once, then reuse.
 - **SSH:** Set the remote to SSH and use your SSH key:
   ```bash
-  git remote set-url origin git@github.com:reallyshadydev/wojakwallet-android.git
+  git remote set-url origin git@github.com:reallyshadydev/wojakcoinwallet.git
   ```
 
 ## 3. Push from this folder
 
 ```bash
-cd /root/wojakwallet-android
+cd /root/wojakcoinwallet
 git push -u origin main
 ```
 
 If you use SSH instead of HTTPS:
 
 ```bash
-git remote set-url origin git@github.com:reallyshadydev/wojakwallet-android.git
+git remote set-url origin git@github.com:reallyshadydev/wojakcoinwallet.git
 git push -u origin main
 ```
 
-Repo URL after creation: **https://github.com/reallyshadydev/wojakwallet-android**
+Repo URL: **https://github.com/reallyshadydev/wojakcoinwallet**

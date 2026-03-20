@@ -1,4 +1,4 @@
-# Building WojakCoin Wallet for Android
+# Building Wojakcoinwallet for Android
 
 This project uses [Capacitor](https://capacitorjs.com/) to run the same Next.js wallet UI inside an Android WebView.
 
@@ -32,6 +32,17 @@ This project uses [Capacitor](https://capacitorjs.com/) to run the same Next.js 
    npm run open:android
    ```
    Then in Android Studio: Run → Run 'app' (or build a release APK via Build → Build Bundle(s) / APK(s)).
+
+## CI (GitHub Actions)
+
+Workflow **Build Android** (`.github/workflows/build-android.yml`) runs on **push to `main`** and **manual dispatch**. It:
+
+1. Runs `npm run build` (static export)
+2. Runs `npx cap sync android`
+3. Builds **`assembleDebug`** (unsigned debug APK)
+4. Uploads **`app-debug.apk`** as a **workflow artifact**
+
+**No GitHub Release is created** — download the APK from the Actions run → **Artifacts** when you are ready to test. After you verify, you can cut a proper signed release separately.
 
 ## Scripts
 

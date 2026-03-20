@@ -8,12 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useWallet } from "@/lib/wallet-context";
+import { useLocale } from "@/lib/i18n/locale-provider";
 import { formatWjk, shortenTxid, shortenAddress, getExplorerTxUrl } from "@/lib/wojakcoin-api";
 import type { Transaction } from "@/lib/wojakcoin-api";
 
 type TxFilter = "all" | "incoming" | "outgoing" | "pending";
 
 export function TransactionsView() {
+  const { t } = useLocale();
   const { transactions, address } = useWallet();
   const [filter, setFilter] = useState<TxFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,26 +52,26 @@ export function TransactionsView() {
     return true;
   });
 
-  const filters: { label: string; value: TxFilter }[] = [
-    { label: "All", value: "all" },
-    { label: "Incoming", value: "incoming" },
-    { label: "Outgoing", value: "outgoing" },
-    { label: "Pending", value: "pending" },
+  const filters: { labelKey: string; value: TxFilter }[] = [
+    { labelKey: "tx.filter_all", value: "all" },
+    { labelKey: "tx.filter_incoming", value: "incoming" },
+    { labelKey: "tx.filter_outgoing", value: "outgoing" },
+    { labelKey: "tx.filter_pending", value: "pending" },
   ];
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-bold text-foreground">Transactions</h2>
+        <h2 className="text-xl font-bold text-foreground">{t("tx.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {transactions.length} total transactions
+          {t("tx.total_count", { count: transactions.length })}
         </p>
       </div>
 
       {/* Filters & Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-2">
-          {filters.map(({ label, value }) => (
+          {filters.map(({ labelKey, value }) => (
             <Button
               key={value}
               variant={filter === value ? "default" : "outline"}
@@ -77,14 +79,14 @@ export function TransactionsView() {
               className="text-xs"
               onClick={() => setFilter(value)}
             >
-              {label}
+              {t(labelKey)}
             </Button>
           ))}
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by txid..."
+            placeholder={t("tx.search_placeholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 text-xs font-mono w-full sm:w-64"
@@ -125,11 +127,11 @@ export function TransactionsView() {
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-foreground capitalize">
-                            {direction}
+                            {t(`dash.${direction}`)}
                           </p>
                           {!tx.status.confirmed && (
                             <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
-                              Pending
+                              {t("dash.pending")}
                             </Badge>
                           )}
                         </div>
@@ -160,7 +162,7 @@ export function TransactionsView() {
                     <div className="border-t border-border bg-secondary/30 px-4 py-4 sm:px-6">
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Transaction Details</p>
+                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">{t("tx.transaction_details")}</p>
                           <div className="flex flex-col gap-2">
                             <div>
                               <span className="text-[10px] text-muted-foreground">TXID</span>
@@ -189,7 +191,7 @@ export function TransactionsView() {
                           </div>
                         </div>
                         <div>
-                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Inputs / Outputs</p>
+                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">{t("tx.inputs_outputs")}</p>
                           <div className="flex flex-col gap-1">
                             {tx.vin.slice(0, 3).map((vin, i) => (
                               <div key={i} className="flex items-center gap-1">
@@ -221,7 +223,7 @@ export function TransactionsView() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                         >
-                          View on Explorer
+                          {t("tx.view_explorer")}
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
@@ -233,7 +235,7 @@ export function TransactionsView() {
 
             {filtered.length === 0 && (
               <div className="px-6 py-12 text-center text-sm text-muted-foreground">
-                No transactions match your filter.
+                {t("tx.no_match")}
               </div>
             )}
           </div>

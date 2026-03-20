@@ -1,5 +1,5 @@
 {
-  "name": "wojakwallet-android",
+  "name": "wojakcoinwallet",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "build:android": "next build && npx cap sync android",
-    "open:android": "npx cap open android"
+    "build:ios": "next build && npx cap sync ios",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios"
   },
   "capacitor": {
     "platforms": [

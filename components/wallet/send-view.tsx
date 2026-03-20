@@ -22,10 +22,12 @@ import { addAddress, isInAddressBook } from "@/lib/addressbook-storage";
 import { QrScannerModal } from "./qr-scanner-modal";
 import { parseWojakCoinQrWithReason } from "@/lib/parse-bip21";
 import { useToast } from "@/hooks/use-toast";
+import { useLocale } from "@/lib/i18n/locale-provider";
 
 type SendStep = "form" | "confirm" | "success";
 
 export function SendView() {
+  const { t } = useLocale();
   const {
     balanceTotal,
     feeEstimates,
@@ -100,7 +102,7 @@ export function SendView() {
       setTxid(resultTxid);
       setStep("success");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Transaction failed";
+      const msg = err instanceof Error ? err.message : t("send.err_tx_failed");
       setError(msg);
       const detailParts: string[] = [];
       if (err instanceof Error && err.name) detailParts.push(`Error type: ${err.name}`);
@@ -123,23 +125,23 @@ export function SendView() {
           <CheckCircle2 className="h-8 w-8 text-success" />
         </div>
         <div className="text-center">
-          <h2 className="text-xl font-bold text-foreground">Transaction Sent</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Your transaction has been broadcast to the network.</p>
+          <h2 className="text-xl font-bold text-foreground">{t("send.success_title")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t("send.success_desc")}</p>
         </div>
         <Card className="w-full">
           <CardContent className="p-4">
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Amount</span>
+                <span className="text-xs text-muted-foreground">{t("send.amount_short")}</span>
                 <span className="text-sm font-mono font-bold text-foreground">{amountBtc} WJK</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Fee</span>
+                <span className="text-xs text-muted-foreground">{t("send.fee_short")}</span>
                 <span className="text-sm font-mono text-foreground">{formatWjk(feeSats)} WJK</span>
               </div>
               <Separator />
               <div>
-                <span className="text-xs text-muted-foreground">Transaction ID</span>
+                <span className="text-xs text-muted-foreground">{t("send.txid")}</span>
                 <p className="mt-1 break-all text-xs font-mono text-foreground">{txid}</p>
               </div>
             </div>
@@ -155,26 +157,26 @@ export function SendView() {
                 setShowSaveToAddressBook(true);
               }}
             >
-              Save to Address Book
+              {t("send.save_contact")}
             </Button>
           )}
           {savedToAddressBook && (
-            <p className="text-center text-sm text-muted-foreground">Saved to address book.</p>
+            <p className="text-center text-sm text-muted-foreground">{t("send.saved_book")}</p>
           )}
           <Dialog open={showSaveToAddressBook} onOpenChange={setShowSaveToAddressBook}>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Save to Address Book</DialogTitle>
+                <DialogTitle>{t("send.dialog_save_title")}</DialogTitle>
                 <DialogDescription>
-                  Enter a name for this address so you can find it quickly next time.
+                  {t("send.dialog_save_desc")}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-2">
                 <div className="grid gap-2">
-                  <Label htmlFor="save-ab-name">Name</Label>
+                  <Label htmlFor="save-ab-name">{t("send.name")}</Label>
                   <Input
                     id="save-ab-name"
-                    placeholder="e.g. Exchange, Friend"
+                    placeholder={t("send.name_placeholder")}
                     value={saveToAddressBookName}
                     onChange={(e) => setSaveToAddressBookName(e.target.value)}
                   />
@@ -182,49 +184,49 @@ export function SendView() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShowSaveToAddressBook(false)}>
-                  Cancel
+                  {t("send.cancel")}
                 </Button>
                 <Button
                   onClick={() => {
                     if (isInAddressBook(recipientAddress)) {
                       toast({
-                        title: "Already in address book",
-                        description: "This address is already saved.",
+                        title: t("addr.toast_already_title"),
+                        description: t("addr.toast_already_desc"),
                         variant: "destructive",
                       });
                       setSavedToAddressBook(true);
                       setShowSaveToAddressBook(false);
                       return;
                     }
-                    const added = addAddress(saveToAddressBookName.trim() || "Unnamed", recipientAddress);
+                    const added = addAddress(saveToAddressBookName.trim() || t("addr.unnamed"), recipientAddress);
                     setShowSaveToAddressBook(false);
                     if (added) {
                       setSavedToAddressBook(true);
                       toast({
-                        title: "Saved to address book",
-                        description: saveToAddressBookName.trim() || "Unnamed",
+                        title: t("addr.toast_saved_title"),
+                        description: saveToAddressBookName.trim() || t("addr.unnamed"),
                       });
                     } else {
                       setSavedToAddressBook(true);
                       toast({
-                        title: "Already in address book",
-                        description: "This address is already saved.",
+                        title: t("addr.toast_already_title"),
+                        description: t("addr.toast_already_desc"),
                         variant: "destructive",
                       });
                     }
                   }}
                 >
-                  Save
+                  {t("send.save")}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
           <div className="flex gap-3">
             <Button onClick={() => setActiveView("dashboard")} variant="outline" className="flex-1">
-              Back to Dashboard
+              {t("send.dashboard")}
             </Button>
             <Button onClick={() => setActiveView("transactions")} className="flex-1">
-              View Transactions
+              {t("send.tx_history")}
             </Button>
           </div>
         </div>
@@ -237,39 +239,39 @@ export function SendView() {
       <div className="mx-auto max-w-lg">
         <Button variant="ghost" className="mb-4 gap-2 text-muted-foreground" onClick={() => setStep("form")}>
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {t("send.back")}
         </Button>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-primary" />
-              Confirm Transaction
+              {t("send.confirm_title")}
             </CardTitle>
-            <CardDescription>Please review the details before broadcasting.</CardDescription>
+            <CardDescription>{t("send.confirm_desc")}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="rounded-lg border border-border bg-secondary/50 p-4">
               <div className="flex flex-col gap-3">
                 <div>
-                  <span className="text-xs text-muted-foreground">Recipient</span>
+                  <span className="text-xs text-muted-foreground">{t("send.recipient_label")}</span>
                   <p className="mt-1 break-all text-sm font-mono text-foreground">{recipientAddress}</p>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Amount</span>
+                  <span className="text-xs text-muted-foreground">{t("send.amount_label")}</span>
                   <span className="text-sm font-mono font-bold text-foreground">{amountBtc} WJK</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Network Fee</span>
+                  <span className="text-xs text-muted-foreground">{t("send.network_fee")}</span>
                   <span className="text-sm font-mono text-foreground">{formatWjk(feeSats)} WJK</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Fee Rate</span>
+                  <span className="text-xs text-muted-foreground">{t("send.fee_rate_label")}</span>
                   <span className="text-sm font-mono text-foreground">{feeRate} sat/vB</span>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-foreground">Total</span>
+                  <span className="text-sm font-semibold text-foreground">{t("send.total_label")}</span>
                   <span className="text-sm font-mono font-bold text-primary">{formatWjk(totalSats)} WJK</span>
                 </div>
               </div>
@@ -280,7 +282,7 @@ export function SendView() {
                 <p className="text-sm font-medium text-destructive">{error}</p>
                 {errorDetail && (
                   <details className="mt-2">
-                    <summary className="cursor-pointer text-xs text-destructive/80 hover:text-destructive">Show details</summary>
+                    <summary className="cursor-pointer text-xs text-destructive/80 hover:text-destructive">{t("send.show_details")}</summary>
                     <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all rounded bg-black/20 p-2 text-[10px] text-destructive/90">
                       {errorDetail}
                     </pre>
@@ -291,7 +293,7 @@ export function SendView() {
 
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setStep("form")} disabled={isSending}>
-                Cancel
+                {t("send.cancel")}
               </Button>
               <Button className="flex-1 gap-2" onClick={handleConfirmSend} disabled={isSending}>
                 {isSending ? (
@@ -299,7 +301,7 @@ export function SendView() {
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
-                {isSending ? "Broadcasting..." : "Send WojakCoin"}
+                {isSending ? t("send.broadcasting") : t("send.send_btn")}
               </Button>
             </div>
           </CardContent>
@@ -311,9 +313,9 @@ export function SendView() {
   return (
     <div className="mx-auto max-w-lg">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-foreground">Send WojakCoin</h2>
+        <h2 className="text-xl font-bold text-foreground">{t("send.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Available: <span className="font-mono font-semibold text-foreground">{formatWjk(balanceTotal)} WJK</span>
+          {t("send.available")} <span className="font-mono font-semibold text-foreground">{formatWjk(balanceTotal)} WJK</span>
         </p>
       </div>
 
@@ -323,7 +325,7 @@ export function SendView() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="recipient" className="text-xs font-medium text-muted-foreground">
-                Recipient Address
+                {t("send.recipient_address")}
               </Label>
               <div className="flex items-center gap-1">
                 <Button
@@ -331,7 +333,7 @@ export function SendView() {
                   size="sm"
                   className="h-8 w-8 p-0"
                   onClick={() => setScanOpen(true)}
-                  title="Scan QR code"
+                  title={t("send.scan_qr")}
                 >
                   <QrCode className="h-4 w-4" />
                 </Button>
@@ -341,7 +343,7 @@ export function SendView() {
                   className="h-auto px-2 py-0.5 text-xs text-primary"
                   onClick={() => setActiveView("addressbook")}
                 >
-                  Address Book
+                  {t("nav.addressbook")}
                 </Button>
               </div>
             </div>
@@ -363,12 +365,12 @@ export function SendView() {
                 `[QR] Scanner error: ${err instanceof Error ? err.message : String(err)}`,
               ])
             }
-            title="Scan Recipient"
-            description="Scan a WojakCoin address or payment QR code"
+            title={t("send.scan_title")}
+            description={t("send.scan_desc")}
           />
           {qrDebugLog.length > 0 && (
             <div className="rounded border border-amber-500/50 bg-amber-500/5 p-2 font-mono text-[10px] text-muted-foreground">
-              <div className="mb-1 font-medium text-amber-600 dark:text-amber-400">QR Debug</div>
+              <div className="mb-1 font-medium text-amber-600 dark:text-amber-400">{t("send.qr_debug")}</div>
               {qrDebugLog.map((line, i) => (
                 <div key={i} className="break-all">
                   {line}
@@ -381,10 +383,10 @@ export function SendView() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="amount" className="text-xs font-medium text-muted-foreground">
-                Amount (WJK)
+                {t("send.amount_wjk")}
               </Label>
               <Button variant="ghost" size="sm" className="h-auto px-2 py-0.5 text-xs text-primary" onClick={handleMax}>
-                Max
+                {t("send.max")}
               </Button>
             </div>
             <Input
@@ -392,7 +394,7 @@ export function SendView() {
               type="number"
               step="0.00000001"
               min="0"
-              placeholder="0.00000000"
+              placeholder={t("send.placeholder_amount")}
               value={amountBtc}
               onChange={(e) => setAmountBtc(e.target.value)}
               className="font-mono text-sm"
@@ -407,7 +409,7 @@ export function SendView() {
           {/* Fee Rate */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium text-muted-foreground">Fee Rate</Label>
+              <Label className="text-xs font-medium text-muted-foreground">{t("send.fee_rate")}</Label>
               <span className="text-xs font-mono text-foreground">{feeRate} sat/vB</span>
             </div>
             <Slider
@@ -418,9 +420,9 @@ export function SendView() {
               step={1}
             />
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>Economy</span>
-              <span>Normal</span>
-              <span>Priority</span>
+              <span>{t("send.economy")}</span>
+              <span>{t("send.normal")}</span>
+              <span>{t("send.priority")}</span>
             </div>
             <div className="flex gap-2">
               {Object.entries(feeEstimates).slice(0, 3).map(([target, rate]) => (
@@ -431,7 +433,7 @@ export function SendView() {
                   className="flex-1 text-xs"
                   onClick={() => setFeeRate(rate)}
                 >
-                  {target === "1" ? "Fast" : target === "3" ? "Medium" : "Slow"}
+                  {target === "1" ? t("send.fast") : target === "3" ? t("send.medium") : t("send.slow")}
                   <span className="ml-1 text-[10px] opacity-70">{rate}</span>
                 </Button>
               ))}
@@ -443,12 +445,12 @@ export function SendView() {
             <div className="rounded-lg border border-border bg-secondary/50 p-3">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Network Fee</span>
+                  <span className="text-xs text-muted-foreground">{t("send.network_fee")}</span>
                   <span className="text-xs font-mono text-foreground">{formatWjk(feeSats)} WJK</span>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground">Total</span>
+                  <span className="text-xs font-semibold text-foreground">{t("send.total_label")}</span>
                   <span className="text-xs font-mono font-bold text-primary">{formatWjk(totalSats)} WJK</span>
                 </div>
               </div>
@@ -457,7 +459,7 @@ export function SendView() {
 
           {totalSats > balanceTotal && amountSats > 0 && (
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3">
-              <p className="text-xs text-destructive">Insufficient funds for this transaction.</p>
+              <p className="text-xs text-destructive">{t("send.insufficient")}</p>
             </div>
           )}
 
@@ -467,7 +469,7 @@ export function SendView() {
             onClick={() => setStep("confirm")}
           >
             <Send className="h-4 w-4" />
-            Review Transaction
+            {t("send.review_tx")}
           </Button>
         </CardContent>
       </Card>
