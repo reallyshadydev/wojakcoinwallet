@@ -62,6 +62,8 @@ const STAY_SIGNED_IN_KEY = "wojak_stay_signed_in";
 const SESSION_WIF_KEY = "wojak_session_wif";
 const FIAT_CURRENCY_KEY = "wojak_fiat_currency";
 const DEFAULT_FIAT: FiatCurrency = "USD";
+/** Auto-lock delay when stay-signed-in is enabled */
+const INACTIVITY_MS = 3 * 60 * 1000;
 
 function getStoredFiatCurrency(): FiatCurrency {
   if (typeof window === "undefined") return DEFAULT_FIAT;
@@ -333,7 +335,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     }
 
     setIsLoaded(true);
-  }, []);
+  }, [fetchWalletData]);
 
   // Background balance polling (every 45s when unlocked)
   useEffect(() => {
@@ -366,7 +368,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   // Inactivity auto-lock (3 min when stay signed in)
   const staySignedInRef = useRef(false);
   const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const INACTIVITY_MS = 3 * 60 * 1000;
 
   const resetInactivityTimer = useCallback(() => {
     if (!staySignedInRef.current || isLocked) return;

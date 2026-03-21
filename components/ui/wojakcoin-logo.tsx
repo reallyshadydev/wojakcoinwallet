@@ -14,6 +14,8 @@ export function WojakCoinLogo({
   const s = size ?? 28;
   const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
   return (
+    // next/image + basePath/static export caused 500s; plain img is intentional
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={`${base}/wojaklogo.jpg`}
       alt="WojakCoin"

@@ -18,7 +18,7 @@ This project uses [Capacitor](https://capacitorjs.com/) to run the same Next.js 
 2. **Configure environment**
    Copy `.env.example` to `.env.local` and set:
    - **`NEXT_PUBLIC_ELECTRS_API_URL`** — Public Electrs URL (default: `https://api.wojakcoin.cash`). Must be reachable from the device.
-   - **`NEXT_PUBLIC_PRICE_API_URL`** — (Optional) Base URL of a deployed Next.js app that exposes `/api/price`. If unset, the app uses cached price only.
+   - **`NEXT_PUBLIC_PRICE_API_URL`** — (Optional) Base URL of a host that exposes `/api/price?currency=`. If unset, the app uses **CoinPaprika + FX** (and local cache), so price still works without your own API.
 
 3. **Build the web app and add Android**
    ```bash
@@ -55,7 +55,7 @@ Workflow **Build Android** (`.github/workflows/build-android.yml`) runs on **pus
 
 1. `next build` produces a **static export** in `out/` (no server; API routes are not available inside the app).
 2. In the Android app, the wallet talks to Electrs **directly** using `NEXT_PUBLIC_ELECTRS_API_URL`.
-3. Price data uses `NEXT_PUBLIC_PRICE_API_URL` if set; otherwise only cached values are shown.
+3. Price: tries `/api/price` (same-origin or `NEXT_PUBLIC_PRICE_API_URL`) first; if that fails, **CoinPaprika** (+ open.er-api.com for non-USD). Cache fills when a fetch succeeds.
 
 ## Release APK
 

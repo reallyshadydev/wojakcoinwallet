@@ -7,7 +7,8 @@
  * Configure via .env:
  * - NEXT_PUBLIC_ELECTRS_API_URL: Electrs base URL (default: http://localhost:3001)
  * - NEXT_PUBLIC_BLOCK_EXPLORER_URL: Block explorer for tx/address links
- * - NEXT_PUBLIC_PRICE_API_URL: (Android) Optional; base URL for /api/price (e.g. deployed Next app)
+ * - NEXT_PUBLIC_PRICE_API_URL: Optional; base URL for /api/price (e.g. deployed Next with server route).
+ *   If unset or unreachable, price falls back to CoinPaprika (public) + FX rates (static export / app).
  */
 
 import { WOJAKCOIN } from "./wojakcoin";
@@ -283,34 +284,85 @@ export function getCachedCoinPrice(currency: string = "USD"): number {
   return getCachedPrice(currency);
 }
 
-/** Fetches WJK price in given currency via /api/price. Uses and updates client cache. In Capacitor app, uses NEXT_PUBLIC_PRICE_API_URL if set. */
+const COINPAPRIKA_WJK_TICKER = "wjk-wojakcoin";
+const FX_USD_LATEST = "https://open.er-api.com/v6/latest/USD";
+
+/**
+ * Public fallback when /api/price is missing (static export, Capacitor) or errors.
+ * WJK USD from CoinPaprika; other fiat via exchangerate-api (USD base).
+ */
+async function fetchCoinPriceFromCoinPaprika(currency: string): Promise<number> {
+  const code = currency.toUpperCase();
+  try {
+    const res = await fetch(`https://api.coinpaprika.com/v1/tickers/${COINPAPRIKA_WJK_TICKER}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return 0;
+    const data = (await res.json()) as { quotes?: { USD?: { price?: number } } };
+    const usd = data?.quotes?.USD?.price;
+    if (typeof usd !== "number" || usd <= 0) return 0;
+    if (code === "USD") return usd;
+
+    const fxRes = await fetch(FX_USD_LATEST, { cache: "no-store" });
+    if (!fxRes.ok) return usd;
+    const fx = (await fxRes.json()) as { result?: string; rates?: Record<string, number> };
+    if (fx.result !== "success" || !fx.rates) return usd;
+    const mult = fx.rates[code];
+    if (typeof mult !== "number" || mult <= 0) return usd;
+    return usd * mult;
+  } catch {
+    return 0;
+  }
+}
+
+async function fetchPriceFromConfiguredApi(url: string): Promise<number> {
+  try {
+    const res = await fetch(url);
+    const data = (await res.json()) as { rate?: number; error?: string };
+    if (!res.ok) return 0;
+    const rate = typeof data?.rate === "number" ? data.rate : 0;
+    return rate > 0 ? rate : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** Fetches WJK price: tries /api/price first, then CoinPaprika + FX. Updates client cache. */
 export async function getCoinPrice(currency: string = "USD"): Promise<number> {
   const code = (currency || "USD").toUpperCase();
   const cap = typeof window !== "undefined" ? (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor : undefined;
   const isNative = cap?.isNativePlatform?.() ?? false;
-  const priceBase = process.env.NEXT_PUBLIC_PRICE_API_URL ?? "";
-  let url: string;
+  const priceBase = (process.env.NEXT_PUBLIC_PRICE_API_URL ?? "").trim();
+
+  let primaryUrl: string | null = null;
   if (typeof window !== "undefined") {
-    if (isNative && priceBase) {
-      url = `${priceBase.replace(/\/+$/, "")}/api/price?currency=${encodeURIComponent(code)}`;
-    } else if (!isNative) {
-      url = `${window.location.origin}${BASE_PATH}/api/price?currency=${encodeURIComponent(code)}`;
+    if (isNative) {
+      if (priceBase) {
+        primaryUrl = `${priceBase.replace(/\/+$/, "")}/api/price?currency=${encodeURIComponent(code)}`;
+      }
     } else {
-      return getCachedPrice(code);
+      if (priceBase) {
+        primaryUrl = `${priceBase.replace(/\/+$/, "")}/api/price?currency=${encodeURIComponent(code)}`;
+      } else {
+        primaryUrl = `${window.location.origin}${BASE_PATH}/api/price?currency=${encodeURIComponent(code)}`;
+      }
     }
   } else {
-    url = `${(priceBase || process.env.NEXT_PUBLIC_APP_URL) ?? ""}${BASE_PATH}/api/price?currency=${encodeURIComponent(code)}`;
+    const base = priceBase || (process.env.NEXT_PUBLIC_APP_URL ?? "").trim();
+    if (base) {
+      primaryUrl = `${base.replace(/\/+$/, "")}${BASE_PATH}/api/price?currency=${encodeURIComponent(code)}`;
+    }
   }
-  try {
-    const res = await fetch(url);
-    const data = (await res.json()) as { rate?: number; error?: string };
-    if (!res.ok) return getCachedPrice(code);
-    const rate = typeof data?.rate === "number" ? data.rate : 0;
-    if (rate > 0) setCachedPrice(rate, code);
-    return rate > 0 ? rate : getCachedPrice(code);
-  } catch {
-    return getCachedPrice(code);
+
+  let rate = 0;
+  if (primaryUrl) {
+    rate = await fetchPriceFromConfiguredApi(primaryUrl);
   }
+  if (rate <= 0) {
+    rate = await fetchCoinPriceFromCoinPaprika(code);
+  }
+  if (rate > 0) setCachedPrice(rate, code);
+  return rate > 0 ? rate : getCachedPrice(code);
 }
 
 /** Format amount in fiat (e.g. balance or price) for display. */

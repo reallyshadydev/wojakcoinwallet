@@ -14,6 +14,13 @@ See [CONTRIBUTORS.md](./CONTRIBUTORS.md) for the full list.
 
 Pre-built **Android** (APK) and **iOS** (App bundle) are attached to [GitHub Releases](https://github.com/reallyshadydev/wojakcoinwallet/releases). The iOS app is built by the **Build iOS** workflow on push to `main` and added to the latest release.
 
+## CI & workflows
+
+- **PRs to `main`:** **CI** runs lint + static `next build` (`.github/workflows/ci.yml`).
+- **Push to `main`:** **Build Android** (debug APK artifact) and **Build iOS** (app artifact / release upload).
+
+Full diagram and manual dispatch notes: **[WORKFLOW.md](./WORKFLOW.md)**.
+
 ## Setup
 
 1. **Install dependencies**
